@@ -1,0 +1,6 @@
+﻿services:
+  match3gameserver:
+    image: match3gameserver
+    build:
+      context: .
+      dockerfile: Match3GameServer/Dockerfile
