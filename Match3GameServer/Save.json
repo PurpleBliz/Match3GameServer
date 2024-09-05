@@ -1,0 +1,422 @@
+{
+  "TileLayouts": [
+    [
+      {
+        "BoardXPosition": 0,
+        "BoardYPosition": 0,
+        "ItemId": 3
+      },
+      {
+        "BoardXPosition": 0,
+        "BoardYPosition": 1,
+        "ItemId": 4
+      },
+      {
+        "BoardXPosition": 0,
+        "BoardYPosition": 2,
+        "ItemId": 2
+      },
+      {
+        "BoardXPosition": 0,
+        "BoardYPosition": 3,
+        "ItemId": 6
+      },
+      {
+        "BoardXPosition": 0,
+        "BoardYPosition": 4,
+        "ItemId": 4
+      },
+      {
+        "BoardXPosition": 0,
+        "BoardYPosition": 5,
+        "ItemId": 5
+      },
+      {
+        "BoardXPosition": 0,
+        "BoardYPosition": 6,
+        "ItemId": 4
+      },
+      {
+        "BoardXPosition": 0,
+        "BoardYPosition": 7,
+        "ItemId": 5
+      },
+      {
+        "BoardXPosition": 0,
+        "BoardYPosition": 8,
+        "ItemId": 2
+      },
+      {
+        "BoardXPosition": 0,
+        "BoardYPosition": 9,
+        "ItemId": 5
+      }
+    ],
+    [
+      {
+        "BoardXPosition": 1,
+        "BoardYPosition": 0,
+        "ItemId": 1
+      },
+      {
+        "BoardXPosition": 1,
+        "BoardYPosition": 1,
+        "ItemId": 5
+      },
+      {
+        "BoardXPosition": 1,
+        "BoardYPosition": 2,
+        "ItemId": 4
+      },
+      {
+        "BoardXPosition": 1,
+        "BoardYPosition": 3,
+        "ItemId": 3
+      },
+      {
+        "BoardXPosition": 1,
+        "BoardYPosition": 4,
+        "ItemId": 2
+      },
+      {
+        "BoardXPosition": 1,
+        "BoardYPosition": 5,
+        "ItemId": 6
+      },
+      {
+        "BoardXPosition": 1,
+        "BoardYPosition": 6,
+        "ItemId": 5
+      },
+      {
+        "BoardXPosition": 1,
+        "BoardYPosition": 7,
+        "ItemId": 1
+      },
+      {
+        "BoardXPosition": 1,
+        "BoardYPosition": 8,
+        "ItemId": 3
+      },
+      {
+        "BoardXPosition": 1,
+        "BoardYPosition": 9,
+        "ItemId": 1
+      }
+    ],
+    [
+      {
+        "BoardXPosition": 2,
+        "BoardYPosition": 0,
+        "ItemId": 6
+      },
+      {
+        "BoardXPosition": 2,
+        "BoardYPosition": 1,
+        "ItemId": 1
+      },
+      {
+        "BoardXPosition": 2,
+        "BoardYPosition": 2,
+        "ItemId": 3
+      },
+      {
+        "BoardXPosition": 2,
+        "BoardYPosition": 3,
+        "ItemId": 5
+      },
+      {
+        "BoardXPosition": 2,
+        "BoardYPosition": 4,
+        "ItemId": 6
+      },
+      {
+        "BoardXPosition": 2,
+        "BoardYPosition": 5,
+        "ItemId": 4
+      },
+      {
+        "BoardXPosition": 2,
+        "BoardYPosition": 6,
+        "ItemId": 2
+      },
+      {
+        "BoardXPosition": 2,
+        "BoardYPosition": 7,
+        "ItemId": 5
+      },
+      {
+        "BoardXPosition": 2,
+        "BoardYPosition": 8,
+        "ItemId": 2
+      },
+      {
+        "BoardXPosition": 2,
+        "BoardYPosition": 9,
+        "ItemId": 6
+      }
+    ],
+    [
+      {
+        "BoardXPosition": 3,
+        "BoardYPosition": 0,
+        "ItemId": 5
+      },
+      {
+        "BoardXPosition": 3,
+        "BoardYPosition": 1,
+        "ItemId": 6
+      },
+      {
+        "BoardXPosition": 3,
+        "BoardYPosition": 2,
+        "ItemId": 4
+      },
+      {
+        "BoardXPosition": 3,
+        "BoardYPosition": 3,
+        "ItemId": 2
+      },
+      {
+        "BoardXPosition": 3,
+        "BoardYPosition": 4,
+        "ItemId": 1
+      },
+      {
+        "BoardXPosition": 3,
+        "BoardYPosition": 5,
+        "ItemId": 6
+      },
+      {
+        "BoardXPosition": 3,
+        "BoardYPosition": 6,
+        "ItemId": 5
+      },
+      {
+        "BoardXPosition": 3,
+        "BoardYPosition": 7,
+        "ItemId": 1
+      },
+      {
+        "BoardXPosition": 3,
+        "BoardYPosition": 8,
+        "ItemId": 3
+      },
+      {
+        "BoardXPosition": 3,
+        "BoardYPosition": 9,
+        "ItemId": 1
+      }
+    ],
+    [
+      {
+        "BoardXPosition": 4,
+        "BoardYPosition": 0,
+        "ItemId": 2
+      },
+      {
+        "BoardXPosition": 4,
+        "BoardYPosition": 1,
+        "ItemId": 4
+      },
+      {
+        "BoardXPosition": 4,
+        "BoardYPosition": 2,
+        "ItemId": 5
+      },
+      {
+        "BoardXPosition": 4,
+        "BoardYPosition": 3,
+        "ItemId": 1
+      },
+      {
+        "BoardXPosition": 4,
+        "BoardYPosition": 4,
+        "ItemId": 2
+      },
+      {
+        "BoardXPosition": 4,
+        "BoardYPosition": 5,
+        "ItemId": 5
+      },
+      {
+        "BoardXPosition": 4,
+        "BoardYPosition": 6,
+        "ItemId": 6
+      },
+      {
+        "BoardXPosition": 4,
+        "BoardYPosition": 7,
+        "ItemId": 4
+      },
+      {
+        "BoardXPosition": 4,
+        "BoardYPosition": 8,
+        "ItemId": 2
+      },
+      {
+        "BoardXPosition": 4,
+        "BoardYPosition": 9,
+        "ItemId": 4
+      }
+    ],
+    [
+      {
+        "BoardXPosition": 5,
+        "BoardYPosition": 0,
+        "ItemId": 6
+      },
+      {
+        "BoardXPosition": 5,
+        "BoardYPosition": 1,
+        "ItemId": 2
+      },
+      {
+        "BoardXPosition": 5,
+        "BoardYPosition": 2,
+        "ItemId": 4
+      },
+      {
+        "BoardXPosition": 5,
+        "BoardYPosition": 3,
+        "ItemId": 3
+      },
+      {
+        "BoardXPosition": 5,
+        "BoardYPosition": 4,
+        "ItemId": 5
+      },
+      {
+        "BoardXPosition": 5,
+        "BoardYPosition": 5,
+        "ItemId": 1
+      },
+      {
+        "BoardXPosition": 5,
+        "BoardYPosition": 6,
+        "ItemId": 5
+      },
+      {
+        "BoardXPosition": 5,
+        "BoardYPosition": 7,
+        "ItemId": 1
+      },
+      {
+        "BoardXPosition": 5,
+        "BoardYPosition": 8,
+        "ItemId": 5
+      },
+      {
+        "BoardXPosition": 5,
+        "BoardYPosition": 9,
+        "ItemId": 1
+      }
+    ],
+    [
+      {
+        "BoardXPosition": 6,
+        "BoardYPosition": 0,
+        "ItemId": 5
+      },
+      {
+        "BoardXPosition": 6,
+        "BoardYPosition": 1,
+        "ItemId": 1
+      },
+      {
+        "BoardXPosition": 6,
+        "BoardYPosition": 2,
+        "ItemId": 5
+      },
+      {
+        "BoardXPosition": 6,
+        "BoardYPosition": 3,
+        "ItemId": 1
+      },
+      {
+        "BoardXPosition": 6,
+        "BoardYPosition": 4,
+        "ItemId": 2
+      },
+      {
+        "BoardXPosition": 6,
+        "BoardYPosition": 5,
+        "ItemId": 4
+      },
+      {
+        "BoardXPosition": 6,
+        "BoardYPosition": 6,
+        "ItemId": 6
+      },
+      {
+        "BoardXPosition": 6,
+        "BoardYPosition": 7,
+        "ItemId": 4
+      },
+      {
+        "BoardXPosition": 6,
+        "BoardYPosition": 8,
+        "ItemId": 6
+      },
+      {
+        "BoardXPosition": 6,
+        "BoardYPosition": 9,
+        "ItemId": 5
+      }
+    ],
+    [
+      {
+        "BoardXPosition": 7,
+        "BoardYPosition": 0,
+        "ItemId": 4
+      },
+      {
+        "BoardXPosition": 7,
+        "BoardYPosition": 1,
+        "ItemId": 3
+      },
+      {
+        "BoardXPosition": 7,
+        "BoardYPosition": 2,
+        "ItemId": 2
+      },
+      {
+        "BoardXPosition": 7,
+        "BoardYPosition": 3,
+        "ItemId": 3
+      },
+      {
+        "BoardXPosition": 7,
+        "BoardYPosition": 4,
+        "ItemId": 6
+      },
+      {
+        "BoardXPosition": 7,
+        "BoardYPosition": 5,
+        "ItemId": 1
+      },
+      {
+        "BoardXPosition": 7,
+        "BoardYPosition": 6,
+        "ItemId": 4
+      },
+      {
+        "BoardXPosition": 7,
+        "BoardYPosition": 7,
+        "ItemId": 6
+      },
+      {
+        "BoardXPosition": 7,
+        "BoardYPosition": 8,
+        "ItemId": 3
+      },
+      {
+        "BoardXPosition": 7,
+        "BoardYPosition": 9,
+        "ItemId": 2
+      }
+    ]
+  ],
+  "Width": 8,
+  "Height": 10
+}
