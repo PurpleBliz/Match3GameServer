@@ -1,42 +1,34 @@
-﻿using System.Net.Sockets;
+﻿using System.Net.WebSockets;
 using System.Text;
 
 namespace Match3GameServer.Services.Implementation;
 
 public class GameSession
 {
-    private readonly TcpClient _player1;
-    private readonly TcpClient _player2;
-    private readonly NetworkStream _player1Stream;
-    private readonly NetworkStream _player2Stream;
+    private readonly WebSocket _player1;
+    private readonly WebSocket _player2;
     private readonly int _player1Id;
     private readonly int _player2Id;
 
     private readonly CancellationTokenSource _cancellationTokenSource;
-    
     private readonly Task _sessionTask;
 
-    public GameSession(TcpClient player1, int player1Id, TcpClient player2, int player2Id)
+    public GameSession(WebSocket player1, int player1Id, WebSocket player2, int player2Id)
     {
         _player1 = player1;
         _player2 = player2;
         _player1Id = player1Id;
         _player2Id = player2Id;
-        _player1Stream = _player1.GetStream();
-        _player2Stream = _player2.GetStream();
         _cancellationTokenSource = new CancellationTokenSource();
-
-        // Запуск сессии в отдельном потоке
+        
         _sessionTask = Task.Run(SessionLoop, _cancellationTokenSource.Token);
     }
 
     public void EndSession()
     {
         _cancellationTokenSource.Cancel();
-        
-        _player1.Close();
-        
-        _player2.Close();
+        _player1.Dispose();
+        _player2.Dispose();
     }
 
     private async Task SessionLoop()
@@ -46,44 +38,46 @@ public class GameSession
         while (!_cancellationTokenSource.Token.IsCancellationRequested)
         {
             // Чтение данных от игрока 1
-            if (_player1Stream.DataAvailable)
+            if (_player1.State == WebSocketState.Open)
             {
-                int bytesRead = await _player1Stream.ReadAsync(buffer, 0, buffer.Length);
-                if (bytesRead > 0)
+                var result = await _player1.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                if (result.MessageType == WebSocketMessageType.Text)
                 {
-                    string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                    string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
                     HandleMessage(_player1Id, message);
                 }
             }
 
             // Чтение данных от игрока 2
-            if (_player2Stream.DataAvailable)
+            if (_player2.State == WebSocketState.Open)
             {
-                int bytesRead = await _player2Stream.ReadAsync(buffer, 0, buffer.Length);
-                if (bytesRead > 0)
+                var result = await _player2.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                if (result.MessageType == WebSocketMessageType.Text)
                 {
-                    string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                    string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
                     HandleMessage(_player2Id, message);
                 }
             }
 
-            await Task.Delay(10); // Небольшая задержка для предотвращения чрезмерного использования процессора
+            await Task.Delay(10);
         }
     }
 
-    private void HandleMessage(int playerId, string message)
+    private async void HandleMessage(int playerId, string message)
     {
         Console.WriteLine($"Player {playerId} sent: {message}");
-        
+
         var response = Encoding.UTF8.GetBytes($"Player {playerId} acknowledged: {message}");
 
-        if (playerId == _player1Id)
+        if (playerId == _player1Id && _player2.State == WebSocketState.Open)
         {
-            _player2Stream.Write(response, 0, response.Length);
+            await _player2.SendAsync(new ArraySegment<byte>(response), WebSocketMessageType.Text, true,
+                CancellationToken.None);
         }
-        else
+        else if (_player1.State == WebSocketState.Open)
         {
-            _player1Stream.Write(response, 0, response.Length);
+            await _player1.SendAsync(new ArraySegment<byte>(response), WebSocketMessageType.Text, true,
+                CancellationToken.None);
         }
     }
 }

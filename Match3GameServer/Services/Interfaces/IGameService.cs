@@ -2,6 +2,7 @@
 
 public interface IGameService
 {
-    void StartServer();
-    void StopServer();
+    bool IsStarted { get; protected set; }
+
+    Task HandleWebSocketAsync(HttpContext context);
 }

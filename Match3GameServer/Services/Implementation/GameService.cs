@@ -1,5 +1,4 @@
-﻿using System.Net;
-using System.Net.Sockets;
+﻿using System.Net.WebSockets;
 using Match3GameServer.Services.Interfaces;
 
 namespace Match3GameServer.Services.Implementation;
@@ -7,76 +6,36 @@ namespace Match3GameServer.Services.Implementation;
 public class GameService : IGameService
 {
     private readonly ILogger<GameService> _logger;
-    private readonly TcpListener? _tcpListener;
     private readonly ISessionService _sessionService;
+    private readonly List<WebSocket> _connectedClients = new List<WebSocket>();
+
+    public bool IsStarted { get; set; }
 
     public GameService
     (
-        IConfiguration configuration,
         ILogger<GameService> logger,
         ISessionService sessionService
     )
     {
         _sessionService = sessionService;
         _logger = logger;
+    }
 
-        string ip = configuration["ASPNETCORE_TCP_IP"] ?? throw new InvalidOperationException();
-        int port = Convert.ToInt32(configuration["ASPNETCORE_TCP_PORT"]);
-        
-        if (string.IsNullOrEmpty(ip) || port <= 0)
+    public async Task HandleWebSocketAsync(HttpContext context)
+    {
+        if (context.WebSockets.IsWebSocketRequest)
         {
-            _logger.LogError("Ip or Port variable is not validate");
+            var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+            _connectedClients.Add(webSocket);
 
-            return;
-        }
-        
-        _tcpListener = new TcpListener(IPAddress.Parse(ip), port);
-    }
-
-    public void StartServer()
-    {
-        if (!CheckAvailable()) return;
-        
-        _tcpListener?.Start();
-
-        _logger.LogInformation("TCP Server started");
-
-        ListenForClients();
-    }
-
-    public void StopServer()
-    {
-        if (!CheckAvailable()) return;
-        
-        _tcpListener?.Stop();
-        
-        _logger.LogInformation("Server stopped");
-    }
-    
-    private void ListenForClients()
-    {
-        int playerIdCounter = 1;
-
-        while (true)
-        {
-            var client = _tcpListener?.AcceptTcpClient();
+            var playerId = _connectedClients.Count;
+            _logger.LogInformation("Player {PlayerId} connected via WebSocket", playerId);
             
-            int playerId = playerIdCounter++;
-
-            _logger.LogInformation("Player {PlayerId} connected", playerId);
-
-            if (client != null) _sessionService.AddPlayer(client, playerId);
+            await _sessionService.AddPlayerAsync(webSocket, playerId);
         }
-        // ReSharper disable once FunctionNeverReturns
-    }
-
-    private bool CheckAvailable()
-    {
-        if (_tcpListener == null)
+        else
         {
-            _logger.LogError("The TCP Listener was not initialized");
+            context.Response.StatusCode = 400;
         }
-
-        return _tcpListener != null;
     }
 }

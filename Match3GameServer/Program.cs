@@ -11,7 +11,7 @@ namespace Match3GameServer;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -40,11 +40,20 @@ public class Program
             () =>
                 "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
-        var scope =  app.Services.CreateAsyncScope();
+        app.UseWebSockets();
 
-        var game = scope.ServiceProvider.GetService<IGameService>();
-
-        game.StartServer();
+        app.Use(async (context, next) =>
+        {
+            if (context.Request.Path == "/ws")
+            {
+                var gameService = context.RequestServices.GetRequiredService<GameService>();
+                await gameService.HandleWebSocketAsync(context);
+            }
+            else
+            {
+                await next();
+            }
+        });
         
         BoardController boardController = new();
 
@@ -54,9 +63,10 @@ public class Program
 
             string json = JsonConvert.SerializeObject(board, Formatting.Indented);
 
-            File.WriteAllText("Save.json", json);
+            await File.WriteAllTextAsync("Save.json", json);
 
             byte[] jsonBytes = Encoding.UTF8.GetBytes(json);
+            
             Console.WriteLine($"Size of JSON data in bytes: {jsonBytes.Length}");
         }
         else

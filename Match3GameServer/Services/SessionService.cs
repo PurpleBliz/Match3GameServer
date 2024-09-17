@@ -1,63 +1,37 @@
 ﻿using System.Collections.Concurrent;
-using System.Net.Sockets;
+using System.Net.WebSockets;
 using Match3GameServer.Services.Implementation;
 using Match3GameServer.Services.Interfaces;
 
-namespace Match3GameServer.Services;
-
-public class SessionService : ISessionService
+namespace Match3GameServer.Services
 {
-    private readonly ILogger<SessionService> _logger;
-
-    private readonly ConcurrentDictionary<int, GameSession> _sessions = new();
-
-    private readonly int _maxSessions;
-    private int _sessionCounter;
-    private TcpClient _waitingPlayer;
-    private int _waitingPlayerId;
-
-    public SessionService
-    (
-        IConfiguration configuration,
-        ILogger<SessionService> logger
-    )
+    public class SessionService : ISessionService
     {
-        _logger = logger;
+        private readonly ILogger<SessionService> _logger;
+        private readonly ConcurrentDictionary<int, GameSession> _sessions = new();
+        private WebSocket _waitingPlayer;
+        private int _waitingPlayerId;
 
-        _maxSessions = Convert.ToInt32(configuration["ASPNETCORE_TCP_MAX_SESSIONS"]);
-    }
-
-    public void AddPlayer(TcpClient client, int playerId)
-    {
-        if (_sessions.Count >= _maxSessions)
+        public async Task AddPlayerAsync(WebSocket webSocket, int playerId)
         {
-            client.Close();
+            if (_waitingPlayer == null)
+            {
+                _waitingPlayer = webSocket;
+                _waitingPlayerId = playerId;
 
-            _logger.LogWarning("Server is full, player rejected");
+                _logger.LogInformation("Player {PlayerId} is waiting for an opponent", playerId);
+            }
+            else
+            {
+                var sessionId = _sessions.Count + 1;
+                var session = new GameSession(_waitingPlayer, _waitingPlayerId, webSocket, playerId);
+                _sessions[sessionId] = session;
 
-            return;
-        }
+                _waitingPlayer = null;
 
-        if (_waitingPlayer == null)
-        {
-            _waitingPlayer = client;
-
-            _waitingPlayerId = playerId;
-
-            _logger.LogWarning("Player {PlayerId} is waiting for an opponent", playerId);
-        }
-        else
-        {
-            var sessionId = Interlocked.Increment(ref _sessionCounter);
-
-            var session = new GameSession(_waitingPlayer, _waitingPlayerId, client, playerId);
-
-            _sessions[sessionId] = session;
-
-            _waitingPlayer = null;
-
-            _logger.LogInformation("Starting session {SessionId} with Player {WaitingPlayerId} and Player {PlayerId}",
-                sessionId, _waitingPlayerId, playerId);
+                _logger.LogInformation("Starting session {SessionId} with Player {WaitingPlayerId} and Player {PlayerId}",
+                    sessionId, _waitingPlayerId, playerId);
+            }
         }
     }
 }
