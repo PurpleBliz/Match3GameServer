@@ -31,7 +31,7 @@ public class Program
         });
 
         builder.Services.AddSingleton<ISessionService, SessionService>();
-        builder.Services.AddSingleton<IGameService, WSGameService>();
+        builder.Services.AddSingleton<IWSGameService, WSGameService>();
 
         var app = builder.Build();
 
@@ -45,15 +45,30 @@ public class Program
 
         app.Use(async (context, next) =>
         {
-            if (context.Request.Path == "/wss")
+            if (context.Request.Path == "/ws")
             {
-                var gameService = context.RequestServices.GetRequiredService<IGameService>();
+                var gameService = context.RequestServices.GetRequiredService<IWSGameService>();
                 await gameService.HandleWebSocketAsync(context);
             }
             else
             {
                 await next();
             }
+        });
+        
+        app.Lifetime.ApplicationStarted.Register(() =>
+        {
+            var wsPath = "/ws";
+            app.Logger.LogInformation("Checking WebSocket server setup...");
+            
+            var addresses = app.Urls;
+            
+            foreach (var address in addresses)
+            {
+                app.Logger.LogInformation($"WebSocket server is running at {address}{wsPath}");
+            }
+            
+            app.Logger.LogInformation("Listening for WebSocket connections...");
         });
         
         BoardController boardController = new();

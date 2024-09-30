@@ -3,7 +3,7 @@ using Match3GameServer.Services.Interfaces;
 
 namespace Match3GameServer.Services.Implementation;
 
-public class WSGameService : IGameService
+public class WSGameService : IWSGameService
 {
     private readonly ILogger<WSGameService> _logger;
     private readonly ISessionService _sessionService;
@@ -23,6 +23,8 @@ public class WSGameService : IGameService
 
     public async Task HandleWebSocketAsync(HttpContext context)
     {
+        _logger.LogInformation("HandleWebSocketAsync");
+        
         if (context.WebSockets.IsWebSocketRequest)
         {
             var webSocket = await context.WebSockets.AcceptWebSocketAsync();

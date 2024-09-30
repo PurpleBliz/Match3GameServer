@@ -1,6 +1,6 @@
 ﻿namespace Match3GameServer.Services.Interfaces;
 
-public interface IGameService
+public interface IWSGameService
 {
     bool IsStarted { get; protected set; }
 
