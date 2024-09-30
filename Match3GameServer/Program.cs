@@ -31,11 +31,12 @@ public class Program
         });
 
         builder.Services.AddSingleton<ISessionService, SessionService>();
-        builder.Services.AddSingleton<IGameService, GameService>();
+        builder.Services.AddSingleton<IGameService, WSGameService>();
 
         var app = builder.Build();
 
-        app.MapGrpcService<GreeterService>();
+        app.MapGrpcService<GameServiceProto>();
+        
         app.MapGet("/",
             () =>
                 "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
@@ -44,9 +45,9 @@ public class Program
 
         app.Use(async (context, next) =>
         {
-            if (context.Request.Path == "/ws")
+            if (context.Request.Path == "/wss")
             {
-                var gameService = context.RequestServices.GetRequiredService<GameService>();
+                var gameService = context.RequestServices.GetRequiredService<IGameService>();
                 await gameService.HandleWebSocketAsync(context);
             }
             else
@@ -71,7 +72,7 @@ public class Program
         }
         else
         {
-            string json = File.ReadAllText("Save.json");
+            string json = await File.ReadAllTextAsync("Save.json");
 
             var board = JsonConvert.DeserializeObject<BoardLayout>(json);
 
@@ -85,6 +86,6 @@ public class Program
 //boardController.TrySwap(new SwapTileDto(0, 0, 1, 0)); //-
 //boardController.TrySwap(new SwapTileDto(5, 8, 4, 8));
 
-        app.Run();
+        await app.RunAsync();
     }
 }

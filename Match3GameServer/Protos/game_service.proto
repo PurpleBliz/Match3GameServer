@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option java_package = "game.player_data";
+
+import "google/protobuf/empty.proto";
+
+service GameService {
+  rpc SendPlayerData (GameServiceGrpcRequest) returns (google.protobuf.Empty);
+}
+
+message GameServiceGrpcRequest {
+  string playerId1 = 1;
+  string playerId2 = 2;
+  string SID = 3;
+  repeated PlayerItems playerItems1 = 4;
+  repeated PlayerItems playerItems2 = 5;
+}
+
+message PlayerItems {
+  string itemType = 1;
+  repeated int32 ids = 2;
+}

@@ -3,17 +3,17 @@ using Match3GameServer.Services.Interfaces;
 
 namespace Match3GameServer.Services.Implementation;
 
-public class GameService : IGameService
+public class WSGameService : IGameService
 {
-    private readonly ILogger<GameService> _logger;
+    private readonly ILogger<WSGameService> _logger;
     private readonly ISessionService _sessionService;
     private readonly List<WebSocket> _connectedClients = new List<WebSocket>();
 
     public bool IsStarted { get; set; }
 
-    public GameService
+    public WSGameService
     (
-        ILogger<GameService> logger,
+        ILogger<WSGameService> logger,
         ISessionService sessionService
     )
     {
