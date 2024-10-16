@@ -1,0 +1,18 @@
+﻿version: '3.4'
+
+services:
+  app:
+    build:
+      context: ./Match3GameServer
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    image: match3server:latest
+    ports:
+      - "5454:5454"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_TCP_MAX_SESSIONS=10
+      - ASPNETCORE_BOARD_WIDTH=10
+      - ASPNETCORE_BOARD_HEIGHT=8
+      - ASPNETCORE_URLS=http://0.0.0.0:${PORT}
+      - PORT=5454

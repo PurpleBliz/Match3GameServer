@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Match3GameServer", "Match3GameServer\Match3GameServer.csproj", "{1352D471-E865-4DB2-9E66-124F6A7BCF48}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{59CDFB33-2DCC-4BD8-98B2-59BF986E641C}"
+	ProjectSection(SolutionItems) = preProject
+		docker-compose.yml = docker-compose.yml
+		build_and_save.sh = build_and_save.sh
+		check-logs.sh = check-logs.sh
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1352D471-E865-4DB2-9E66-124F6A7BCF48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1352D471-E865-4DB2-9E66-124F6A7BCF48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1352D471-E865-4DB2-9E66-124F6A7BCF48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1352D471-E865-4DB2-9E66-124F6A7BCF48}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

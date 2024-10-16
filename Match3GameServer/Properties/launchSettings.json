@@ -1,0 +1,36 @@
+﻿{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:5275",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_TCP_IP":"127.0.0.1",
+        "ASPNETCORE_TCP_PORT":"8080",
+        "ASPNETCORE_TCP_MAX_SESSIONS":"10",
+        "ASPNETCORE_BOARD_WIDTH": "10",
+        "ASPNETCORE_BOARD_HEIGHT": "8",
+        "PORT": "5454",
+        "ASPNETCORE_PORT_WS": "5455"
+      }
+    },
+    "https": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "https://localhost:7252;http://localhost:5275",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_TCP_IP":"127.0.0.1",
+        "ASPNETCORE_TCP_PORT":"8080",
+        "ASPNETCORE_TCP_MAX_SESSIONS":"10",
+        "ASPNETCORE_BOARD_WIDTH": "10",
+        "ASPNETCORE_BOARD_HEIGHT": "8",
+        "PORT": "5454"
+      }
+    }
+  }
+}
