@@ -1,6 +1,5 @@
-using Match3GameServer.Logging;
+using Match3GameServer.Messages;
 using Match3GameServer.Services;
-using Match3GameServer.Services.Implementation;
 using Match3GameServer.Services.Interfaces;
 
 namespace Match3GameServer;
@@ -12,37 +11,21 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         var port = Environment.GetEnvironmentVariable("PORT") ?? "80";
+        
         builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
         
-        builder.Services.AddGrpc();
-
-        var loggingTagsSection = builder.Configuration.GetSection("Logging:Tags");
-        Logging.TagOptions.INFO = loggingTagsSection.GetValue<bool>("INFO");
-        Logging.TagOptions.DEBUG = loggingTagsSection.GetValue<bool>("DEBUG");
-        Logging.TagOptions.ERROR = loggingTagsSection.GetValue<bool>("ERROR");
-        Logging.TagOptions.WARN = loggingTagsSection.GetValue<bool>("WARN");
-        Logging.TagOptions.CRITICAL = loggingTagsSection.GetValue<bool>("CRITICAL");
-
-        builder.Services.AddLogging(builder =>
-        {
-            builder.ClearProviders();
-            builder.AddProvider(new TurboLoggerProvider());
-        });
-
-        builder.Services.AddSingleton<ISessionService, SessionService>();
-        builder.Services.AddSingleton<IWebsocketService, WebsocketService>();
+        builder.Configuration.InitLogging();
+        
+        builder.Services.AddServices();
         
         var app = builder.Build();
-        
+
+        app.Services.RegisterMessages();
+
         app.MapGrpcService<GameServiceProto>();
         
-        /*app.MapGet("/",
-            () =>
-                "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");*/
-
         app.MapGet("/", () =>
         {
-            app.Logger.LogInformation("Received request at root endpoint");
             return "WebSocket server is running. Use '/ws' to connect.";
         });
         
@@ -50,19 +33,18 @@ public class Program
 
         app.Use(async (context, next) =>
         {
-            app.Logger.LogInformation("Received request: {Path} with method: {Method}", context.Request.Path, context.Request.Method);
+            app.Logger.LogWarning("Received request: {Path} with method: {Method}", context.Request.Path, context.Request.Method);
 
             if (context.Request.Path == "/ws")
             {
                 if (context.WebSockets.IsWebSocketRequest)
                 {
-                    app.Logger.LogInformation("Attempting to upgrade to WebSocket...");
-                    var gameService = context.RequestServices.GetRequiredService<IWebsocketService>();
-                    await gameService.HandleWebSocketAsync(context);
+                    var websocketService = context.RequestServices.GetRequiredService<IWebsocketService>();
+                    
+                    await websocketService.HandleWebSocketAsync(context);
                 }
                 else
                 {
-                    app.Logger.LogWarning("Non-WebSocket request received at /ws");
                     context.Response.StatusCode = 400;
                     await context.Response.WriteAsync("This endpoint requires a WebSocket connection.");
                 }

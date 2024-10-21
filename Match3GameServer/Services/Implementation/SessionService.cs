@@ -1,9 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.WebSockets;
-using Match3GameServer.Services.Implementation;
 using Match3GameServer.Services.Interfaces;
 
-namespace Match3GameServer.Services;
+namespace Match3GameServer.Services.Implementation;
 
 public class SessionService : ISessionService
 {

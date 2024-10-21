@@ -1,7 +1,7 @@
 ﻿using System.Net.WebSockets;
 using System.Text;
 
-namespace Match3GameServer.Services.Implementation;
+namespace Match3GameServer.Services;
 
 public class GameSession
 {

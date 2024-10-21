@@ -1,6 +1,8 @@
-﻿namespace Match3GameServer.DTO;
+﻿using Match3GameServer.Messages.Base;
 
-public class SwapTileDto
+namespace Match3GameServer.Messages;
+
+public class SwapTileMessage
 {
     public int FromXPosition { get; set; }
     public int FromYPosition { get; set; }
@@ -8,7 +10,7 @@ public class SwapTileDto
     public int ToXPosition { get; set; }
     public int ToYPosition { get; set; }
 
-    public SwapTileDto
+    public SwapTileMessage
     (
         int fromX,
         int fromY,

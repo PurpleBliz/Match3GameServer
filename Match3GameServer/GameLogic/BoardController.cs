@@ -1,6 +1,6 @@
 ﻿using System.Text;
-using Match3GameServer.DTO;
 using Match3GameServer.GameLogic.Models;
+using Match3GameServer.Messages;
 
 namespace Match3GameServer.GameLogic;
 
@@ -65,7 +65,7 @@ public sealed class BoardController
         return boardLayout;
     }
 
-    public void TrySwap(SwapTileDto swapTile)
+    public void TrySwap(SwapTileMessage swapTile)
     {
         //TODO: Session boards
 
@@ -122,7 +122,7 @@ public sealed class BoardController
         BoardLogging("Final board state");
     }
 
-    private List<TileLayout> SwapTilePair(SwapTileDto swapTile)
+    private List<TileLayout> SwapTilePair(SwapTileMessage swapTile)
     {
         TileLayout from = _boardLayout.TileLayouts[swapTile.FromXPosition, swapTile.FromYPosition];
         TileLayout to = _boardLayout.TileLayouts[swapTile.ToXPosition, swapTile.ToYPosition];
@@ -279,7 +279,7 @@ public sealed class BoardController
         return availableIds[_random.Next(availableIds.Count)];
     }
     
-    private bool IsNeighbour(SwapTileDto swapTile)
+    private bool IsNeighbour(SwapTileMessage swapTile)
     {
         return Math.Abs(swapTile.FromXPosition - swapTile.ToXPosition) +
             Math.Abs(swapTile.FromYPosition - swapTile.ToYPosition) == 1;
