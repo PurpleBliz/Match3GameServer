@@ -1,6 +1,5 @@
 using Match3GameServer.Logging;
 using Match3GameServer.Messages;
-using Match3GameServer.Messages.Responses;
 using Match3GameServer.Services;
 using Match3GameServer.Services.Implementation;
 using Match3GameServer.Services.Interfaces;
@@ -60,17 +59,5 @@ public static class ServicesExtensions
         }
 
         MessageHandlers.Init(logger);
-    }
-
-    /// <summary>
-    /// Registers message types and their corresponding IDs in the MessageHandlers system.
-    /// </summary>
-    public static void RegisterMessages()
-    {
-        MessageHandlers.RegisterMessage<PlayerInitMessage>(1001);
-        MessageHandlers.RegisterMessage<SwapTileMessage>(1002);
-
-        MessageHandlers.RegisterResponse<InitResponse>(1001);
-        MessageHandlers.RegisterResponse<BoardLayoutResponse>(1002);
     }
 }

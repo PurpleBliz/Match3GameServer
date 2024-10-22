@@ -24,7 +24,7 @@ public class Program
         
         loggerFactory.InitMessageHandlers();
 
-        ServicesExtensions.RegisterMessages();
+        MessageHelper.RegisterMessages();
         
         app.MapGrpcService<GameServiceProto>();
         

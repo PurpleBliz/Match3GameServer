@@ -1,7 +1,8 @@
 ﻿using Match3GameServer.GameLogic;
 using Match3GameServer.GameLogic.Models;
 using Match3GameServer.Messages;
-using Match3GameServer.Messages.Responses;
+using Match3GameServer.Messages.Client;
+using Match3GameServer.Messages.Server;
 using Match3GameServer.Models;
 
 namespace Match3GameServer.Services;
@@ -39,7 +40,7 @@ public class GameSession
         {
             var board = _boardControllers[client].GetNewBoard(_boardSettings.Width, _boardSettings.Height);
 
-            await client.SendMessage<BoardLayoutResponse>(new BoardLayoutResponse()
+            await client.SendMessage<BoardLayoutMessage>(new BoardLayoutMessage()
             {
                 Width = board.Width,
                 Height = board.Height,

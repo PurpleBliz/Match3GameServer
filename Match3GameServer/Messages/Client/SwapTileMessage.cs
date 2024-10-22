@@ -1,6 +1,6 @@
 ﻿using Match3GameServer.Messages.Base;
 
-namespace Match3GameServer.Messages;
+namespace Match3GameServer.Messages.Client;
 
 public class SwapTileMessage : WebsocketMessage
 {

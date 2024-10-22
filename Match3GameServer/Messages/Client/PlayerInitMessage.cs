@@ -1,7 +1,7 @@
 using Match3GameServer.Messages.Base;
 using Newtonsoft.Json;
 
-namespace Match3GameServer.Messages;
+namespace Match3GameServer.Messages.Client;
 
 [Serializable]
 public class PlayerInitMessage : WebsocketMessage

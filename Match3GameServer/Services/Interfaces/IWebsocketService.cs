@@ -13,7 +13,5 @@ public interface IWebsocketService
 
     Task HandleWebSocketAsync(HttpContext context);
 
-    Task SendToClient<T>(WebSocketClient client, T message) where T : WebSocketResponse;
-
     Task CloseServer();
 }

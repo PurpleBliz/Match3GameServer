@@ -2,7 +2,8 @@
 using System.Net.WebSockets;
 using Match3GameServer.Messages;
 using Match3GameServer.Messages.Base;
-using Match3GameServer.Messages.Responses;
+using Match3GameServer.Messages.Client;
+using Match3GameServer.Messages.Server;
 using Match3GameServer.Models;
 using Match3GameServer.Services.Interfaces;
 
@@ -89,27 +90,6 @@ public class WebSocketService : IWebsocketService
             context.Response.StatusCode = 400;
         }
     }
-    
-    public async Task SendToClient<T>(WebSocketClient client, T message) where T : WebSocketResponse
-    {
-        var (success, messageId) = MessageHandlers.GetIdByType<T>();
-
-        if (!success)
-        {
-            _logger.LogError($"Message ID not found for type {typeof(T).Name}");
-            
-            return;
-        }
-        
-        message.MessageId = messageId;
-        
-        var json = Newtonsoft.Json.JsonConvert.SerializeObject(message);
-        var responseBuffer = System.Text.Encoding.UTF8.GetBytes(json);
-
-        _logger.LogInformation($"Sending message to player: {json}");
-        
-        await client.Connection.SendAsync(new ArraySegment<byte>(responseBuffer), WebSocketMessageType.Text, true, CancellationToken.None);
-    }
 
     private async Task ListenForMessagesAsync(WebSocketClient client)
     {
@@ -189,7 +169,7 @@ public class WebSocketService : IWebsocketService
         
         OnClientVerifered?.Invoke(client);
 
-        await client.SendMessage(new InitResponse
+        await client.SendMessage(new InitMessage
         {
             Text = $"Hello {message.PlayerId}"
         });

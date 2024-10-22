@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Match3GameServer.GameLogic.Models;
 using Match3GameServer.Messages;
+using Match3GameServer.Messages.Client;
 
 namespace Match3GameServer.GameLogic;
 

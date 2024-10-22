@@ -2,9 +2,9 @@ using Match3GameServer.GameLogic.Models;
 using Match3GameServer.Messages.Base;
 using Newtonsoft.Json;
 
-namespace Match3GameServer.Messages.Responses;
+namespace Match3GameServer.Messages.Server;
 
-public class BoardLayoutResponse : WebSocketResponse
+public class BoardLayoutMessage : WebsocketMessage
 {
     [JsonProperty]
     public TileLayout[,] TileLayouts { get; set; }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using Match3GameServer.GameLogic.Models;
 using Match3GameServer.Messages;
+using Match3GameServer.Messages.Client;
 using Match3GameServer.Models;
 using Match3GameServer.Services.Interfaces;
 

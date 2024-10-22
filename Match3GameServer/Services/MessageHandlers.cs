@@ -10,7 +10,6 @@ public static class MessageHandlers
 {
     private static readonly Dictionary<Type, List<Action<WebSocketClient, WebsocketMessage>>> Handlers = new();
     private static readonly Dictionary<int, Type> Messages = new();
-    private static readonly Dictionary<Type, int> Responses = new();
 
     private static ILogger? _logger;
 
@@ -57,24 +56,6 @@ public static class MessageHandlers
     }
 
     /// <summary>
-    /// Registers a response type and associates it with a unique response ID.
-    /// </summary>
-    /// <param name="responseId">An integer representing the response ID to be associated with the type.</param>
-    /// <typeparam name="T">The response type to be registered.</typeparam>
-    public static void RegisterResponse<T>(int responseId)
-    {
-        var type = typeof(T);
-
-        var result = Responses.TryAdd(type, responseId);
-
-        if (!result)
-        {
-            _logger?.LogWarning(
-                $"There was an error when registering the type, perhaps such a message already exists: {responseId}");
-        }
-    }
-
-    /// <summary>
     /// Retrieves the response ID associated with a given type.
     /// </summary>
     /// <typeparam name="T">The type for which the response ID is needed.</typeparam>
@@ -82,15 +63,18 @@ public static class MessageHandlers
     public static (bool Success, int ResponseId) GetIdByType<T>()
     {
         var type = typeof(T);
-
-        if (!Responses.TryGetValue(type, out int responseId))
+        
+        foreach (var kvp in Messages)
         {
-            _logger?.LogWarning("Response type not found in the registry.");
-
-            return (false, 0);
+            if (kvp.Value == type)
+            {
+                return (true, kvp.Key); // Возвращаем идентификатор и успех
+            }
         }
-
-        return (true, responseId);
+        
+        _logger?.LogError($"Response type not found in the registry for type: {type.Name}");
+        
+        return (false, 0);
     }
 
     /// <summary>
@@ -129,9 +113,9 @@ public static class MessageHandlers
     /// This method serializes the message to JSON and sends it over the WebSocket connection.
     /// </summary>
     /// <param name="client">The WebSocket client to which the message will be sent.</param>
-    /// <param name="message">The message to send, which must inherit from <see cref="WebSocketResponse"/>.</param>
-    /// <typeparam name="T">The type of the message, which must inherit from <see cref="WebSocketResponse"/>.</typeparam>
-    public static async Task SendMessage<T>(this WebSocketClient client, T message) where T : WebSocketResponse
+    /// <param name="message">The message to send, which must inherit from <see cref="WebsocketMessage"/>.</param>
+    /// <typeparam name="T">The type of the message, which must inherit from <see cref="WebsocketMessage"/>.</typeparam>
+    public static async Task SendMessage<T>(this WebSocketClient client, T message) where T : WebsocketMessage
     {
         var (success, messageId) = MessageHandlers.GetIdByType<T>();
 
