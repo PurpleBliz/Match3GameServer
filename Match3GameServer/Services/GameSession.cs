@@ -1,83 +1,55 @@
-﻿using System.Net.WebSockets;
-using System.Text;
+﻿using Match3GameServer.GameLogic;
+using Match3GameServer.GameLogic.Models;
+using Match3GameServer.Messages;
+using Match3GameServer.Messages.Responses;
+using Match3GameServer.Models;
 
 namespace Match3GameServer.Services;
 
 public class GameSession
 {
-    private readonly WebSocket _player1;
-    private readonly WebSocket _player2;
-    private readonly int _player1Id;
-    private readonly int _player2Id;
+    private readonly WebSocketClient _firstPlayer;
+    private readonly WebSocketClient _secondPlayer;
 
-    private readonly CancellationTokenSource _cancellationTokenSource;
+    private readonly Dictionary<WebSocketClient, BoardController> _boardControllers;
+    
     private readonly Task _sessionTask;
+    private readonly BoardSettings _boardSettings;
 
-    public GameSession(WebSocket player1, int player1Id, WebSocket player2, int player2Id)
+    public GameSession(WebSocketClient firstPlayer, WebSocketClient secondPlayer, BoardSettings boardSettings)
     {
-        _player1 = player1;
-        _player2 = player2;
-        _player1Id = player1Id;
-        _player2Id = player2Id;
-        _cancellationTokenSource = new CancellationTokenSource();
+        _firstPlayer = firstPlayer;
+        _secondPlayer = secondPlayer;
+        _boardSettings = boardSettings;
         
-        _sessionTask = Task.Run(SessionLoop, _cancellationTokenSource.Token);
+        _boardControllers = new();
+        
+        _boardControllers.Add(_firstPlayer, new BoardController());
+        _boardControllers.Add(_secondPlayer, new BoardController());
     }
 
     public void EndSession()
     {
-        _cancellationTokenSource.Cancel();
-        _player1.Dispose();
-        _player2.Dispose();
+       
     }
 
-    private async Task SessionLoop()
+    public async Task StartSession()
     {
-        var buffer = new byte[8192];
-
-        while (!_cancellationTokenSource.Token.IsCancellationRequested)
+        foreach (var client in _boardControllers.Keys)
         {
-            // Чтение данных от игрока 1
-            if (_player1.State == WebSocketState.Open)
-            {
-                var result = await _player1.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-                if (result.MessageType == WebSocketMessageType.Text)
-                {
-                    string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                    HandleMessage(_player1Id, message);
-                }
-            }
+            var board = _boardControllers[client].GetNewBoard(_boardSettings.Width, _boardSettings.Height);
 
-            // Чтение данных от игрока 2
-            if (_player2.State == WebSocketState.Open)
+            await client.SendMessage<BoardLayoutResponse>(new BoardLayoutResponse()
             {
-                var result = await _player2.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-                if (result.MessageType == WebSocketMessageType.Text)
-                {
-                    string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                    HandleMessage(_player2Id, message);
-                }
-            }
-
-            await Task.Delay(10);
+                Width = board.Width,
+                Height = board.Height,
+                TileLayouts = board.TileLayouts
+            });
         }
     }
 
-    private async void HandleMessage(int playerId, string message)
+    public void TrySwapTile(WebSocketClient client, SwapTileMessage message)
     {
-        Console.WriteLine($"Player {playerId} sent: {message}");
-
-        var response = Encoding.UTF8.GetBytes($"Player {playerId} acknowledged: {message}");
-
-        if (playerId == _player1Id && _player2.State == WebSocketState.Open)
-        {
-            await _player2.SendAsync(new ArraySegment<byte>(response), WebSocketMessageType.Text, true,
-                CancellationToken.None);
-        }
-        else if (_player1.State == WebSocketState.Open)
-        {
-            await _player1.SendAsync(new ArraySegment<byte>(response), WebSocketMessageType.Text, true,
-                CancellationToken.None);
-        }
+        //TODO: Create logic
     }
 }

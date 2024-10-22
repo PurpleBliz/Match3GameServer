@@ -66,11 +66,11 @@ public class TurboLogger : ILogger
     {
         return logLevel switch
         {
-            LogLevel.Debug => TagOptions.DEBUG,
-            LogLevel.Information => TagOptions.INFO,
-            LogLevel.Warning => TagOptions.WARN,
-            LogLevel.Error => TagOptions.ERROR,
-            LogLevel.Critical => TagOptions.CRITICAL,
+            LogLevel.Debug => LoggerOptions.DEBUG,
+            LogLevel.Information => LoggerOptions.INFO,
+            LogLevel.Warning => LoggerOptions.WARN,
+            LogLevel.Error => LoggerOptions.ERROR,
+            LogLevel.Critical => LoggerOptions.CRITICAL,
             _ => true,
         };
     }

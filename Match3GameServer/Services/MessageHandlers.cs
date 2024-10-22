@@ -1,20 +1,21 @@
+using System.Net.WebSockets;
+using System.Text;
+using Match3GameServer.Logging;
 using Match3GameServer.Messages.Base;
 using Match3GameServer.Models;
 
 namespace Match3GameServer.Services;
 
-public class MessageHandlers
+public static class MessageHandlers
 {
-    private readonly Dictionary<Type, List<Action<WebSocketClient, WebsocketMessage>>> _handlers;
-    private readonly Dictionary<int, Type> _messages;
-    private readonly Dictionary<Type, int> _responses;
-    private readonly ILogger<MessageHandlers> _logger;
+    private static readonly Dictionary<Type, List<Action<WebSocketClient, WebsocketMessage>>> Handlers = new();
+    private static readonly Dictionary<int, Type> Messages = new();
+    private static readonly Dictionary<Type, int> Responses = new();
 
-    public MessageHandlers(ILogger<MessageHandlers> logger)
+    private static ILogger? _logger;
+
+    public static void Init(ILogger logger)
     {
-        _handlers = new();
-        _messages = new();
-        _responses = new();
         _logger = logger;
     }
 
@@ -23,18 +24,18 @@ public class MessageHandlers
     /// </summary>
     /// <param name="action">Method to execute when the message is received.</param>
     /// <typeparam name="T">The WebsocketMessage type that the handler will process.</typeparam>
-    public void RegisterHandler<T>(Action<WebSocketClient, T> action) where T : WebsocketMessage
+    public static void RegisterHandler<T>(Action<WebSocketClient, T> action) where T : WebsocketMessage
     {
         var type = typeof(T);
 
-        if (!_handlers.ContainsKey(type))
+        if (!Handlers.ContainsKey(type))
         {
-            _handlers[type] = new();
+            Handlers[type] = new();
         }
 
         Action<WebSocketClient, WebsocketMessage> wrappedAction = (connection, msg) => action(connection, (T)msg);
 
-        _handlers[type].Add(wrappedAction);
+        Handlers[type].Add(wrappedAction);
     }
 
     /// <summary>
@@ -42,32 +43,33 @@ public class MessageHandlers
     /// </summary>
     /// <param name="messageId">An integer representing the message type.</param>
     /// <typeparam name="T">The WebsocketMessage type being registered.</typeparam>
-    public void RegisterMessage<T>(int messageId)
+    public static void RegisterMessage<T>(int messageId)
     {
         var type = typeof(T);
 
-        var result = _messages.TryAdd(messageId, type);
+        var result = Messages.TryAdd(messageId, type);
 
         if (!result)
         {
-            _logger.LogWarning(
+            _logger?.LogWarning(
                 $"There was an error when registering the type, perhaps such a message already exists: {messageId}");
         }
     }
+
     /// <summary>
     /// Registers a response type and associates it with a unique response ID.
     /// </summary>
     /// <param name="responseId">An integer representing the response ID to be associated with the type.</param>
     /// <typeparam name="T">The response type to be registered.</typeparam>
-    public void RegisterResponse<T>(int responseId)
+    public static void RegisterResponse<T>(int responseId)
     {
         var type = typeof(T);
 
-        var result = _responses.TryAdd(type, responseId);
+        var result = Responses.TryAdd(type, responseId);
 
         if (!result)
         {
-            _logger.LogWarning(
+            _logger?.LogWarning(
                 $"There was an error when registering the type, perhaps such a message already exists: {responseId}");
         }
     }
@@ -77,13 +79,13 @@ public class MessageHandlers
     /// </summary>
     /// <typeparam name="T">The type for which the response ID is needed.</typeparam>
     /// <returns>A tuple containing a success flag and the associated response ID if found, or 0 if not.</returns>
-    public (bool Success, int ResponseId) GetIdByType<T>()
+    public static (bool Success, int ResponseId) GetIdByType<T>()
     {
         var type = typeof(T);
 
-        if (!_responses.TryGetValue(type, out int responseId))
+        if (!Responses.TryGetValue(type, out int responseId))
         {
-            _logger.LogWarning("Response type not found in the registry.");
+            _logger?.LogWarning("Response type not found in the registry.");
 
             return (false, 0);
         }
@@ -96,22 +98,22 @@ public class MessageHandlers
     /// </summary>
     /// <param name="client">The WebSocket client that sent the message.</param>
     /// <param name="jsonMessage">The raw JSON message received from the client.</param>
-    public void InvokeHandler(WebSocketClient client, string jsonMessage)
+    public static void InvokeHandler(WebSocketClient client, string jsonMessage)
     {
         var baseMessage = Newtonsoft.Json.JsonConvert.DeserializeObject<WebsocketMessage>(jsonMessage);
 
-        if (baseMessage == null || !_messages.TryGetValue(baseMessage.MessageId, out var type))
+        if (baseMessage == null || !Messages.TryGetValue(baseMessage.MessageId, out var type))
         {
-            _logger.LogError($"Invalid or unrecognized message type: {baseMessage?.MessageId}");
+            _logger?.LogError($"Invalid or unrecognized message type: {baseMessage?.MessageId}");
 
             return;
         }
 
         var message = (WebsocketMessage?)Newtonsoft.Json.JsonConvert.DeserializeObject(jsonMessage, type);
 
-        if (message == null || !_handlers.TryGetValue(type, out var handlers))
+        if (message == null || !Handlers.TryGetValue(type, out var handlers))
         {
-            _logger.LogError("Message is null or no handlers found for this message type.");
+            _logger?.LogError("Message is null or no handlers found for this message type.");
 
             return;
         }
@@ -120,5 +122,41 @@ public class MessageHandlers
         {
             handler.Invoke(client, message);
         }
+    }
+
+    /// <summary>
+    /// Sends a message to the specified WebSocket client after assigning the appropriate message ID.
+    /// This method serializes the message to JSON and sends it over the WebSocket connection.
+    /// </summary>
+    /// <param name="client">The WebSocket client to which the message will be sent.</param>
+    /// <param name="message">The message to send, which must inherit from <see cref="WebSocketResponse"/>.</param>
+    /// <typeparam name="T">The type of the message, which must inherit from <see cref="WebSocketResponse"/>.</typeparam>
+    public static async Task SendMessage<T>(this WebSocketClient client, T message) where T : WebSocketResponse
+    {
+        var (success, messageId) = MessageHandlers.GetIdByType<T>();
+
+        if (!success)
+        {
+            _logger?.LogError($"Message ID not found for type {typeof(T).Name}");
+
+            return;
+        }
+
+        message.MessageId = messageId;
+
+        var json = Newtonsoft.Json.JsonConvert.SerializeObject(message);
+        var responseBuffer = System.Text.Encoding.UTF8.GetBytes(json);
+        
+        var compressedMessage = json;
+
+        if (LoggerOptions.ENCODE_PAYLOAD)
+        {
+            compressedMessage = Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
+        }
+
+        _logger?.LogInformation($"Sending message to player. Payload: {compressedMessage}");
+
+        await client.Connection.SendAsync(new ArraySegment<byte>(responseBuffer), WebSocketMessageType.Text, true,
+            CancellationToken.None);
     }
 }

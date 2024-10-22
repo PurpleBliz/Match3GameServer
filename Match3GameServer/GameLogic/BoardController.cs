@@ -6,6 +6,8 @@ namespace Match3GameServer.GameLogic;
 
 public sealed class BoardController
 {
+    public BoardLayout Board => _boardLayout;
+    
     private List<int> _list = new() //TODO: Swap to GUID
     {
         1, 2, 3, 4, 5, 6
@@ -22,9 +24,9 @@ public sealed class BoardController
         BoardLogging("SetBoard");
     }
 
-    public BoardLayout GetNewBoard(int width, int height)
+    public BoardLayout GetNewBoard(int width = 10, int height = 8)
     {
-        BoardLayout boardLayout = new(8, 10); //TODO:Get in ENV
+        BoardLayout boardLayout = new(width, height);
 
         int[] previousTop = new int[boardLayout.Width];
 

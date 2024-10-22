@@ -2,7 +2,7 @@
 
 namespace Match3GameServer.Messages;
 
-public class SwapTileMessage
+public class SwapTileMessage : WebsocketMessage
 {
     public int FromXPosition { get; set; }
     public int FromYPosition { get; set; }

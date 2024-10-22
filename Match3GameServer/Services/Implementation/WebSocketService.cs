@@ -1,4 +1,5 @@
-﻿using System.Net.WebSockets;
+﻿using System.Collections.Concurrent;
+using System.Net.WebSockets;
 using Match3GameServer.Messages;
 using Match3GameServer.Messages.Base;
 using Match3GameServer.Messages.Responses;
@@ -9,31 +10,40 @@ namespace Match3GameServer.Services.Implementation;
 
 public class WebSocketService : IWebsocketService
 {
-    public List<WebSocketClient> ConnectedClients => _connectedClients;
+    public List<WebSocketClient> ConnectedClients => _connectedClients.Values.ToList();
     
     private readonly ILogger<WebSocketService> _logger;
-    private readonly ISessionService _sessionService;
-    private readonly List<WebSocketClient> _connectedClients;
-    private readonly MessageHandlers _messageHandlers;
+    private readonly ConcurrentDictionary<int, WebSocketClient> _connectedClients;
 
     public bool IsStarted { get; set; }
     public event Action<WebSocketClient>? OnClientConnected;
     public event Action<WebSocketClient>? OnClientDisconnected;
+    public event Action<WebSocketClient>? OnClientVerifered;
+
+    protected readonly byte[] Buffer = new byte[10 * 1024];
     
-    protected readonly byte[] Buffer = new byte[1024 * 10];
+    private bool _disposed;
 
     public WebSocketService
     (
-        ILogger<WebSocketService> logger,
-        ISessionService sessionService,
-        MessageHandlers messageHandlers
+        IHostApplicationLifetime applicationLifetime,
+        ILogger<WebSocketService> logger
     )
     {
-        _sessionService = sessionService;
         _logger = logger;
-        _messageHandlers = messageHandlers;
 
         _connectedClients = new();
+        
+        MessageHandlers.RegisterHandler<PlayerInitMessage>(UpgradeClient);
+        
+        applicationLifetime.ApplicationStopping.Register(OnApplicationQuit);
+    }
+
+    private async void OnApplicationQuit()
+    {
+        _disposed = true;
+        
+        await CloseServer();
     }
 
     public async Task HandleWebSocketAsync(HttpContext context)
@@ -53,17 +63,15 @@ public class WebSocketService : IWebsocketService
                     return;
                 }
 
-                var playerId = _connectedClients.Count;
+                var playerId = _connectedClients.Count + 1;
 
                 WebSocketClient client = new(webSocket, playerId);
 
-                _connectedClients.Add(client);
+                _connectedClients.TryAdd(playerId, client);
 
                 OnClientConnected?.Invoke(client);
 
                 _logger.LogInformation("Player {PlayerId} connected via WebSocket", playerId);
-
-                await _sessionService.AddPlayerAsync(webSocket, playerId);
 
                 await ListenForMessagesAsync(client);
             }
@@ -81,10 +89,10 @@ public class WebSocketService : IWebsocketService
             context.Response.StatusCode = 400;
         }
     }
-
-    public async Task SendToPlayer<T>(WebSocketClient client, T message) where T : WebSocketResponse
+    
+    public async Task SendToClient<T>(WebSocketClient client, T message) where T : WebSocketResponse
     {
-        var (success, messageId) = _messageHandlers.GetIdByType<T>();
+        var (success, messageId) = MessageHandlers.GetIdByType<T>();
 
         if (!success)
         {
@@ -103,16 +111,14 @@ public class WebSocketService : IWebsocketService
         await client.Connection.SendAsync(new ArraySegment<byte>(responseBuffer), WebSocketMessageType.Text, true, CancellationToken.None);
     }
 
-
     private async Task ListenForMessagesAsync(WebSocketClient client)
     {
-        _messageHandlers.RegisterHandler<PlayerInitMessage>(ActionInit);
-        
         try
         {
             while (client.Connection.State == WebSocketState.Open)
             {
-                var result = await client.Connection.ReceiveAsync(new ArraySegment<byte>(Buffer), CancellationToken.None);
+                var result =
+                    await client.Connection.ReceiveAsync(new ArraySegment<byte>(Buffer), CancellationToken.None);
 
                 if (result.MessageType == WebSocketMessageType.Text)
                 {
@@ -120,30 +126,33 @@ public class WebSocketService : IWebsocketService
 
                     _logger.LogInformation("Player {PlayerId} sent message: {Message}", client.PlayerId, jsonMessage);
 
-                    _messageHandlers.InvokeHandler(client, jsonMessage);
+                    MessageHandlers.InvokeHandler(client, jsonMessage);
                 }
                 else if (result.MessageType == WebSocketMessageType.Close)
                 {
                     _logger.LogInformation("Player {PlayerId} disconnected.", client.PlayerId);
                     await client.Connection.CloseAsync(WebSocketCloseStatus.NormalClosure, "Connection closed",
                         CancellationToken.None);
-                    
-                    _connectedClients.Remove(client);
-                    
+
+                    _connectedClients.TryRemove(client.InternalId, out _);
+
                     return;
                 }
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while receiving data from player {PlayerId}.", client.PlayerId);
+            if (client.Connection.State != WebSocketState.Closed && !_disposed)
+            {
+                _logger.LogError(ex, "Error occurred while receiving data from player {PlayerId}.", client.InternalId);
+            }
         }
         finally
         {
-            if (_connectedClients.Contains(client))
+            if (_connectedClients.ContainsKey(client.InternalId))
             {
-                _connectedClients.Remove(client);
-                
+                _connectedClients.TryRemove(client.InternalId, out _);
+
                 OnClientDisconnected?.Invoke(client);
             }
 
@@ -155,13 +164,34 @@ public class WebSocketService : IWebsocketService
         }
     }
 
-    private async void ActionInit(WebSocketClient client, PlayerInitMessage message)
+    public async Task CloseServer()
     {
-        _logger.LogInformation($"[{message.MessageId}] PlayerId: {message.PlayerId} SID: {message.SId}");
-
-        await SendToPlayer(client, new InitResponse
+        _logger.LogInformation("The procedure for disconnecting clients has begun");
+        
+        foreach (var client in _connectedClients.Values)
         {
-            Text = "Hello"
+            await client.Connection.CloseAsync(WebSocketCloseStatus.NormalClosure, "Server shutting down",
+                CancellationToken.None);
+            
+            _logger.LogInformation($"The client[{client.InternalId}] has been disconnected");
+        }
+        
+        _connectedClients.Clear();
+        
+        _logger.LogInformation("The procedure for disconnecting clients has been completed");
+    }
+
+    private async void UpgradeClient(WebSocketClient client, PlayerInitMessage message)
+    {
+        _logger.LogInformation($"UpgradeClient[{client.InternalId}] PlayerId: {message.PlayerId} SID: {message.SId}");
+        
+        client.Verification(message.PlayerId, message.SId);
+        
+        OnClientVerifered?.Invoke(client);
+
+        await client.SendMessage(new InitResponse
+        {
+            Text = $"Hello {message.PlayerId}"
         });
     }
 }

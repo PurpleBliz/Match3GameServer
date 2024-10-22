@@ -1,8 +1,8 @@
-﻿using System.Net.WebSockets;
+﻿using Match3GameServer.Models;
 
 namespace Match3GameServer.Services.Interfaces;
 
 public interface ISessionService
 {
-    Task AddPlayerAsync(WebSocket webSocket, int playerId);
+    Task AddPlayerAsync(WebSocketClient client);
 }

@@ -9,8 +9,11 @@ public interface IWebsocketService
 
     event Action<WebSocketClient> OnClientConnected;
     event Action<WebSocketClient> OnClientDisconnected;
+    event Action<WebSocketClient> OnClientVerifered;
 
     Task HandleWebSocketAsync(HttpContext context);
 
-    Task SendToPlayer<T>(WebSocketClient client, T message) where T : WebSocketResponse;
+    Task SendToClient<T>(WebSocketClient client, T message) where T : WebSocketResponse;
+
+    Task CloseServer();
 }

@@ -19,9 +19,13 @@ public class Program
         builder.Services.AddServices();
         
         var app = builder.Build();
+        
+        var loggerFactory = app.Services.GetRequiredService<ILoggerFactory>();
+        
+        loggerFactory.InitMessageHandlers();
 
-        app.Services.RegisterMessages();
-
+        ServicesExtensions.RegisterMessages();
+        
         app.MapGrpcService<GameServiceProto>();
         
         app.MapGet("/", () =>
